@@ -31,15 +31,16 @@ else
   done
 fi
 
-# 3. privacy grep (whole-word names, paths, emails), excluding tests/.
+# 3. privacy grep (whole-word names, paths, emails), excluding tests/ and .git/
+# (.git/logs is the local reflog, written with the cloner's own git identity).
 # The private names live in tests/private-words.local (one word per line). That
 # file is never published, so a public checkout skips only the names part.
 PW="$SKILL_DIR/tests/private-words.local"
-if [ -f "$PW" ]; then HITS=$(grep -rniwF -f "$PW" "$SKILL_DIR" --exclude-dir=tests 2>/dev/null)
+if [ -f "$PW" ]; then HITS=$(grep -rniwF -f "$PW" "$SKILL_DIR" --exclude-dir=tests --exclude-dir=.git 2>/dev/null)
 else HITS=""; ok "privacy names list not present (public checkout): names part skipped"; fi
 # D8 (owner decision, 16/11/2026): the copyright holder is public on purpose; only these two exact lines are allowed
 HITS=$(grep -vxF -e "$SKILL_DIR/LICENSE:3:Copyright (c) 2026 Leonardo Maciel" -e "$SKILL_DIR/README.md:$(grep -nxF '[MIT](LICENSE). Copyright (c) 2026 Leonardo Maciel.' "$SKILL_DIR/README.md" | cut -d: -f1):[MIT](LICENSE). Copyright (c) 2026 Leonardo Maciel." <<< "$HITS")
-HITS2=$(grep -rniE '/Users/|@gmail' "$SKILL_DIR" --exclude-dir=tests 2>/dev/null)
+HITS2=$(grep -rniE '/Users/|@gmail' "$SKILL_DIR" --exclude-dir=tests --exclude-dir=.git 2>/dev/null)
 if [ -z "$HITS$HITS2" ]; then ok "privacy grep clean"; else fail "privacy hits:"; echo "$HITS$HITS2"; fi
 
 # 4. English only: no accented Portuguese characters in *.md
